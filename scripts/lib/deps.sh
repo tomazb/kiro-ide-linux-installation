@@ -9,7 +9,7 @@ IFS=$'\n\t'
 # Requires: log.sh, os.sh, sudo.sh
 
 kiro_deps_require() {
-  local -a required=("bash" "curl" "tar" "jq")
+  local -a required=("bash" "curl" "tar" "jq" "sha256sum")
   local -a missing=()
   for d in "${required[@]}"; do
     command -v "$d" >/dev/null 2>&1 || missing+=("$d")

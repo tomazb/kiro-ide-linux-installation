@@ -96,12 +96,27 @@ kiro_check_update_needed() {
 
 kiro_download_and_extract() {
   local tmpdir="$1"
-  local archive="${tmpdir}/kiro.tar.gz"
-  log_info "Downloading package..."
-  kiro_net_download "${KIRO_PACKAGE_URL}" "${archive}" 5
-
   local extract_dir="${tmpdir}/extracted"
   mkdir -p "${extract_dir}"
+
+  # Cache path per version
+  local cache_dir="${KIRO_CACHE_DIR:-${HOME}/.cache/kiro}/releases/${KIRO_CURRENT_VERSION}"
+  mkdir -p "${cache_dir}"
+  local archive="${cache_dir}/kiro.tar.gz"
+
+  if [[ -s "${archive}" ]]; then
+    log_info "Using cached package: ${archive}"
+  else
+    log_info "Downloading package..."
+    kiro_net_download "${KIRO_PACKAGE_URL}" "${archive}" 5
+  fi
+
+  # Verify integrity (warns if no checksum available unless --skip-verify)
+  if ! kiro_verify_archive "${archive}" "${KIRO_PACKAGE_URL}"; then
+    rm -f "${archive}" || true
+    return 1
+  fi
+
   log_info "Extracting package..."
   tar -xzf "${archive}" -C "${extract_dir}"
 

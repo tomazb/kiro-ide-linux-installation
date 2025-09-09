@@ -31,6 +31,8 @@ source "${SCRIPT_DIR}/lib/version.sh"
 # shellcheck disable=SC1091
 source "${SCRIPT_DIR}/lib/state.sh"
 # shellcheck disable=SC1091
+source "${SCRIPT_DIR}/lib/verify.sh"
+# shellcheck disable=SC1091
 source "${SCRIPT_DIR}/lib/installer.sh"
 
 print_header() {
