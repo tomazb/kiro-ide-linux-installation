@@ -11,7 +11,7 @@ kiro_cli_parse() {
   local -a args=("$@")
 
   local short_opts="hyvq"
-  local long_opts="help,install,update,uninstall,user,force,clean,dry-run,non-interactive,yes,config:,cache-dir:,state-dir:,log-level:,no-color,json-logs,checksum:,sig:,cert:,package:,skip-deps,skip-verify,skip-hooks,channel:,version:,prefix:"
+  local long_opts="help,install,update,uninstall,user,force,clean,dry-run,non-interactive,yes,config:,cache-dir:,state-dir:,log-level:,no-color,json-logs,checksum:,sig:,cert:,package:,require-verify,skip-deps,skip-verify,skip-hooks,channel:,version:,prefix:"
 
   if getopt --test >/dev/null 2>&1; then
     local parsed
@@ -56,6 +56,7 @@ kiro_cli_parse() {
       --sig) KIRO_SIG="$2"; shift 2 ;;
       --cert) KIRO_CERT="$2"; shift 2 ;;
       --package) KIRO_PACKAGE_LOCAL="$2"; shift 2 ;;
+      --require-verify) KIRO_REQUIRE_VERIFY=true; shift ;;
       --skip-deps) KIRO_SKIP_DEPS=true; shift ;;
       --skip-verify) KIRO_SKIP_VERIFY=true; shift ;;
       --skip-hooks) KIRO_SKIP_HOOKS=true; shift ;;

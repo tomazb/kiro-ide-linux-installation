@@ -127,6 +127,7 @@ Verification flow (high level):
    - If signature verification fails, the install aborts; if not available, the installer proceeds with a warning
 
 To bypass verification explicitly (not recommended), pass `--skip-verify` or set `KIRO_SKIP_VERIFY=true`.
+To enforce verification (require either a checksum or a valid signature), pass `--require-verify` or set `KIRO_REQUIRE_VERIFY=true`.
 
 Examples:
 ```bash

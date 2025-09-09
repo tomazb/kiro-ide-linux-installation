@@ -257,6 +257,7 @@ kiro_verify_archive() {
   fi
 
   local expected=""
+  local have_checksum=false
   if [[ -n "${KIRO_CHECKSUM:-}" ]]; then
     expected=$(kiro_resolve_checksum_arg "${KIRO_CHECKSUM}") || true
   fi
@@ -264,7 +265,11 @@ kiro_verify_archive() {
     expected=$(kiro_fetch_remote_checksum_for_url "${source_url}") || true
   fi
   if [[ -z "${expected}" ]]; then
-    log_warn "No checksum available for ${source_url}. Consider providing --checksum or use --skip-verify to bypass."
+    if [[ "${KIRO_REQUIRE_VERIFY:-false}" == true ]]; then
+      log_warn "Verification required; no checksum provided for ${source_url} (will require valid signature)"
+    else
+      log_warn "No checksum available for ${source_url}. Consider providing --checksum or use --skip-verify to bypass."
+    fi
   else
     local actual
     actual=$(kiro_sha256 "${archive}")
@@ -273,6 +278,7 @@ kiro_verify_archive() {
       return 1
     fi
     log_info "Checksum OK (${actual})"
+    have_checksum=true
   fi
 
   # Attempt signature verification if metadata/cert+sig available
@@ -289,6 +295,10 @@ kiro_verify_archive() {
       return 1
       ;;
     2)
+      if [[ "${KIRO_REQUIRE_VERIFY:-false}" == true && "${have_checksum}" != true ]]; then
+        log_error "Verification required but neither checksum nor signature are available for ${source_url}"
+        return 1
+      fi
       # Not available -> proceed (checksum already validated or skipped by user)
       log_warn "No signature available for ${source_url}; proceeding without signature verification"
       ;;

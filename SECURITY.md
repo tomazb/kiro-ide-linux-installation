@@ -50,9 +50,10 @@ Configuration
   - --checksum <hex|file:/path|url:https://...>
   - --sig <file:/path|url:...|base64>
   - --cert <file:/path|url:...>
-  - --skip-verify
+  - --require-verify (fail if neither checksum nor signature is available)
+  - --skip-verify (bypass verification entirely)
 - Environment variables:
-  - KIRO_CHECKSUM, KIRO_SIG, KIRO_CERT, KIRO_SKIP_VERIFY
+  - KIRO_CHECKSUM, KIRO_SIG, KIRO_CERT, KIRO_REQUIRE_VERIFY, KIRO_SKIP_VERIFY
   - KIRO_METADATA_URL (defaults in scripts/conf/defaults.conf)
 
 Examples

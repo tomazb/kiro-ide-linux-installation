@@ -133,7 +133,7 @@ kiro_download_and_extract() {
 
     if [[ ! -e "${payload}/bin/kiro" && ! -e "${payload}/kiro" ]]; then
       log_error "Extracted payload is missing kiro executable"
-      find "${extract_dir}" -maxdepth 2 -type f -o -type d | sort | head -n 50 | sed 's/^/ > /'
+      find "${extract_dir}" -maxdepth 2 \( -type f -o -type d \) | sort | head -n 50 | sed 's/^/ > /'
       return 1
     fi
 
@@ -174,7 +174,7 @@ kiro_download_and_extract() {
 
   if [[ ! -e "${payload}/bin/kiro" && ! -e "${payload}/kiro" ]]; then
     log_error "Extracted payload is missing kiro executable"
-    find "${extract_dir}" -maxdepth 2 -type f -o -type d | sort | head -n 50 | sed 's/^/ > /'
+    find "${extract_dir}" -maxdepth 2 \( -type f -o -type d \) | sort | head -n 50 | sed 's/^/ > /'
     return 1
   fi
 
@@ -360,10 +360,15 @@ kiro_install_main() {
 
   # Write state
   local st_json
-  st_json=$(jq -n --arg version "${KIRO_CURRENT_VERSION}" --arg prefix "${INSTALL_PREFIX}" --arg url "${KIRO_PACKAGE_URL}" --arg ts "$(date -u +%FT%TZ)" '{version:$version,prefix:$prefix,source:$url,installed_at:$ts}')
+  # Compose state. In offline mode, KIRO_CURRENT_VERSION may be unset; fall back to KIRO_TARGET_VERSION or a sentinel.
+  local version_for_state
+  version_for_state="${KIRO_CURRENT_VERSION:-${KIRO_TARGET_VERSION:-(local-package)}}"
+  local source_for_state
+  source_for_state="${KIRO_PACKAGE_URL:-${KIRO_PACKAGE_LOCAL:-unknown}}"
+  st_json=$(jq -n --arg version "${version_for_state}" --arg prefix "${INSTALL_PREFIX}" --arg url "${source_for_state}" --arg ts "$(date -u +%FT%TZ)" '{version:$version,prefix:$prefix,source:$url,installed_at:$ts}')
   kiro_state_write "${st_json}"
 
-  log_info "Installation complete: version ${KIRO_CURRENT_VERSION}"
+  log_info "Installation complete: version ${version_for_state}"
 }
 
 kiro_uninstall_main() {
