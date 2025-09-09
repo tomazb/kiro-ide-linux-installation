@@ -5,13 +5,13 @@ set -Eeuo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: scripts/run-container.sh [--engine podman|docker] [--image NAME] [--tag TAG] [--backend x11|wayland] [--gpu] [--] [CMD...]
+Usage: scripts/run-container.sh [--engine podman|docker] [--image NAME] [--tag TAG] [--backend auto|x11|wayland] [--gpu] [--] [CMD...]
 
 Options:
   --engine     Container engine (default: podman if available, otherwise docker)
   --image      Image name (default: kiro-runtime)
   --tag        Image tag (default: latest)
-  --backend    Display backend: x11 (default) or wayland
+  --backend    Display backend: auto (default), x11, or wayland
   --gpu        Add GPU device (/dev/dri) to the container
   --           Pass all remaining args as the container command (default: kiro)
 
@@ -36,7 +36,7 @@ EOF
 ENGINE=""
 IMAGE_NAME="kiro-runtime"
 IMAGE_TAG="latest"
-BACKEND="x11"
+BACKEND="auto"
 USE_GPU=false
 CMD_ARGS=()
 
@@ -57,8 +57,20 @@ if [[ -z "$ENGINE" ]]; then
   if command -v podman >/dev/null 2>&1; then ENGINE=podman; elif command -v docker >/dev/null 2>&1; then ENGINE=docker; else echo "Neither podman nor docker found" >&2; exit 1; fi
 fi
 
+# Auto-detect backend if requested
+if [[ "${BACKEND}" == "auto" ]]; then
+  if [[ -n "${WAYLAND_DISPLAY:-}" && -n "${XDG_RUNTIME_DIR:-}" ]]; then
+    BACKEND="wayland"
+  elif [[ -n "${DISPLAY:-}" ]]; then
+    BACKEND="x11"
+  else
+    echo "Could not determine display backend automatically. Set --backend x11 or --backend wayland." >&2
+    exit 2
+  fi
+fi
+
 if [[ "${BACKEND}" != "x11" && "${BACKEND}" != "wayland" ]]; then
-  echo "Unsupported backend: ${BACKEND}. Use x11 or wayland." >&2
+  echo "Unsupported backend: ${BACKEND}. Use auto, x11, or wayland." >&2
   exit 2
 fi
 

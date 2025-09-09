@@ -121,9 +121,9 @@ podman build -t kiro-runtime -f Containerfile .
 
 # Run with helper (X11 default)
 xhost +local:
-scripts/run-container.sh --engine podman --image kiro-runtime --tag latest
+scripts/run-container.sh --engine podman --image kiro-runtime --tag latest  # auto-detects X11/Wayland
 
-# Run with Wayland backend
+# Force Wayland backend (override auto-detection)
 scripts/run-container.sh --engine podman --backend wayland
 ```
 
