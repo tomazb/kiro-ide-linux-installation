@@ -94,6 +94,22 @@ kiro_try_fetch_cert_from_release_dir() {
   return 1
 }
 
+# Try to fetch a signature from the release directory alongside the archive
+# Returns base64-encoded signature on stdout
+kiro_try_fetch_signature_from_release_dir() {
+  local source_url="$1"
+  local base="${source_url%/*}"
+  local sig_url="${base}/signature.bin"
+  local tmp
+  tmp=$(mktemp -t kiro.sig.XXXXXX)
+  trap 'rm -f "'"${tmp}"'"' RETURN
+  if kiro_net_download "${sig_url}" "${tmp}" 3 2>/dev/null; then
+    base64 < "${tmp}" | tr -d "\n"
+    return 0
+  fi
+  return 1
+}
+
 kiro_verify_signature() {
   local archive="$1"; shift
   local source_url="$1"; shift
@@ -118,6 +134,10 @@ kiro_verify_signature() {
   if [[ -z "${KIRO_SIGNATURE_B64:-}" ]]; then
     # metadata may contain a signature
     kiro_extract_signature_from_metadata "${source_url}" || true
+  fi
+  if [[ -z "${KIRO_SIGNATURE_B64:-}" ]]; then
+    # Try fetching signature.bin from release directory
+    KIRO_SIGNATURE_B64=$(kiro_try_fetch_signature_from_release_dir "${source_url}" || true)
   fi
   if [[ -z "${KIRO_SIGNATURE_B64:-}" || -z "${KIRO_CERT_PEM_CONTENT:-}" ]]; then
     # No signature info available
