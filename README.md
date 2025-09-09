@@ -2,18 +2,20 @@
 
 Automated installer for [Kiro](https://kiro.dev/), an AI-powered development environment. This repository provides scripts to easily install, update, and manage Kiro on any Linux distribution.
 
+Note: a refactored, safer, and idempotent installer now lives under scripts/. The legacy top-level scripts remain for compatibility until removed.
+
 ## Quick Installation
 
 The easiest way to install Kiro is using our clone-and-install script:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/abhilashiig/kiro-ide-linux-installation/main/clone-and-install-kiro.sh | bash
+curl -fsSL https://raw.githubusercontent.com/abhilashiig/kiro-ide-linux-installation/main/scripts/clone-and-install-kiro.sh | bash
 ```
 
 This single command will:
 
 - Clone this repository to a temporary directory
-- Run the installation script automatically
+- Run the refactored installer automatically
 - Clean up temporary files when done
 
 ## Installation Options
@@ -21,7 +23,7 @@ This single command will:
 ### System-wide Installation (default)
 
 ```bash
-./clone-and-install-kiro.sh
+./scripts/install-kiro.sh
 ```
 
 Installs Kiro to `/opt/kiro` (requires sudo)
@@ -29,7 +31,7 @@ Installs Kiro to `/opt/kiro` (requires sudo)
 ### User-only Installation
 
 ```bash
-./clone-and-install-kiro.sh --user
+./scripts/install-kiro.sh --user
 ```
 
 Installs Kiro to `~/.local/share/kiro` (no sudo required)
@@ -37,7 +39,7 @@ Installs Kiro to `~/.local/share/kiro` (no sudo required)
 ### Force Reinstall
 
 ```bash
-./clone-and-install-kiro.sh --force
+./scripts/install-kiro.sh --force
 ```
 
 Reinstalls even if the same version is already installed
@@ -47,7 +49,7 @@ Reinstalls even if the same version is already installed
 ### Update Kiro
 
 ```bash
-./clone-and-install-kiro.sh --update
+./scripts/install-kiro.sh --update
 ```
 
 The script automatically checks for updates and installs the latest version
@@ -56,10 +58,10 @@ The script automatically checks for updates and installs the latest version
 
 ```bash
 # Remove installation only
-./clone-and-install-kiro.sh --uninstall
+./scripts/install-kiro.sh --uninstall
 
 # Remove installation and user data
-./clone-and-install-kiro.sh --uninstall --clean
+./scripts/install-kiro.sh --uninstall --clean
 ```
 
 ## What This Does
@@ -78,7 +80,7 @@ The installation script handles everything automatically:
 For more installation options, run:
 
 ```bash
-./clone-and-install-kiro.sh --help
+./scripts/install-kiro.sh --help
 ```
 
 ## Compatibility
