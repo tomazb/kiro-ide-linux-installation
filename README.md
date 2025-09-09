@@ -116,15 +116,15 @@ You can build a local container image that installs Kiro inside the image using 
 Example using Podman:
 
 ```bash
+# Build
 podman build -t kiro-runtime -f Containerfile .
 
-# Run with X11 (Linux desktop); may require allowing local connections
-xhost +local:  # allow local X access (consider security implications)
-podman run --rm \
-  -e DISPLAY \
-  -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
-  --device /dev/dri \
-  kiro-runtime
+# Run with helper (X11 default)
+xhost +local:
+scripts/run-container.sh --engine podman --image kiro-runtime --tag latest
+
+# Run with Wayland backend
+scripts/run-container.sh --engine podman --backend wayland
 ```
 
 Notes:
