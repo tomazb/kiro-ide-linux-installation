@@ -99,7 +99,7 @@ main() {
     lock_path="/var/lock/kiro-install.lock"
   fi
   kiro_fs_acquire_lock "${lock_path}"
-  trap 'kiro_fs_release_lock' EXIT
+  trap 'kiro_fs_release_lock' EXIT ERR INT TERM
 
   case "${ACTION}" in
     uninstall)
