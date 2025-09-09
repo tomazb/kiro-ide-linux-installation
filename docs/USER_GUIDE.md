@@ -32,6 +32,9 @@ Repository layout
   - integration/: offline end-to-end install test using a signed tarball and checksum
 - docs/: this user guide and other repository documentation
 - CHANGELOG.md: notable changes
+- Containerfile and .containerignore: local container builds only (no publishing)
+- scripts/build-container.sh: helper to build the image (auto-detects engine)
+- scripts/run-container.sh: helper to run the image (auto-detects X11/Wayland, optional GPU)
 
 Common commands
 - Quick install (user mode):
@@ -69,10 +72,20 @@ CLI summary (selected)
 - --ca-bundle /path/to/ca.pem
 - See ./scripts/install-kiro.sh --help for full list
 
+Containers (local builds only)
+- Build locally (no distribution):
+  - scripts/build-container.sh  # auto-detects podman/docker/nerdctl
+  - or: podman build -t kiro-runtime -f Containerfile .
+- Run locally with display integration:
+  - scripts/run-container.sh  # auto-detects X11/Wayland and optionally GPU (/dev/dri)
+  - Examples:
+    - X11: xhost +local: && scripts/run-container.sh --engine podman
+    - Wayland: scripts/run-container.sh --engine podman --backend wayland
+
 What changed from upstream
 - Refactored installer:
   - Main orchestrator introduced (scripts/install-kiro.sh) with clear separation of concerns via scripts/lib/*
-  - Legacy top-level scripts converted into thin wrappers for backward compatibility
+  - Legacy top-level scripts were removed; use scripts/ paths
 - Verification improvements:
   - Strict verification mode (--require-verify)
   - Offline/local installations via --package

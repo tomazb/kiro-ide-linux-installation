@@ -131,6 +131,7 @@ Notes:
 - This will download Kiro during the image build and install it to /opt/kiro, with /usr/local/bin/kiro symlink.
 - Running GUI apps in containers depends on host display and GPU setup; you may need additional flags on some hosts.
 - No images are published by this repository; you control builds and distribution yourself.
+- You can also build via helper: scripts/build-container.sh (auto-detects engine and platform)
 
 See the full user guide in docs/USER_GUIDE.md for details.
 

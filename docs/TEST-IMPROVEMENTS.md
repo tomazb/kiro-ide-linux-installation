@@ -26,5 +26,6 @@ Task list
 - [x] Add negative-path tests: checksum mismatch, invalid signature, insecure http blocked
 - [x] Add offline/local signature autodetection test (file: URL with colocated certificate.pem/signature.bin)
 - [x] Enforce strict verification in CI (KIRO_REQUIRE_VERIFY=true)
+- [x] Add container smoke build on pull requests
 - [ ] Document remaining gaps and prioritize
 

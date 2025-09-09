@@ -12,8 +12,11 @@ Repository layout (proposed)
 - scripts/clone-and-install-kiro.sh: Compatibility wrapper that delegates to the orchestrator
 - scripts/lib/*.sh: Libraries (logging, config, CLI parsing, FS utilities, network, versioning, state, rollback, deps, sudo helpers, hooks, progress)
 - scripts/conf/defaults.conf: Built-in defaults that can be overridden via env/config/CLI
-- docs/: Additional docs (MIGRATION.md, SECURITY.md, OPERATIONS.md)
+- docs/: Documentation (USER_GUIDE.md, SECURITY.md, TEST-IMPROVEMENTS.md)
 - tests/: bats unit tests, integration, and e2e suites
+- Containerfile, .containerignore: local container builds only (no publishing)
+- scripts/build-container.sh: local image build (auto-detect engine)
+- scripts/run-container.sh: local run helper (auto-detect X11/Wayland; optional GPU)
 
 Coding standards
 - Bash: set -Eeuo pipefail and safe IFS. Quote all variables. Avoid eval. No unbounded globbing. Use readonly constants.
@@ -25,6 +28,7 @@ Testing & coverage
 - Integration tests run end-to-end; include an offline path using a signed tarball and checksum (see tests/integration).
 - Use kcov (in CI) to gather coverage. Keep docs/TEST-IMPROVEMENTS.md current with coverage gaps and tasks.
 - CI enforces strict verification (KIRO_REQUIRE_VERIFY=true); tests should provide checksum and/or signature.
+- CI includes a container smoke build job on pull requests to detect Containerfile regressions.
 
 Release & versioning
 - Maintain backward compatibility for CLI flags. Emit deprecation warnings when renaming.
