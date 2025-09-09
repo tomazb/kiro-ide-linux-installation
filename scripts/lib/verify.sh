@@ -141,7 +141,7 @@ kiro_verify_signature() {
   fi
   if [[ -z "${KIRO_SIGNATURE_B64:-}" || -z "${KIRO_CERT_PEM_CONTENT:-}" ]]; then
     # No signature info available
-    return 1
+    return 2
   fi
 
   local tmp_cert tmp_sig
@@ -276,8 +276,24 @@ kiro_verify_archive() {
   fi
 
   # Attempt signature verification if metadata/cert+sig available
+  local sig_rc
+  sig_rc=0
   if ! kiro_verify_signature "${archive}" "${source_url}"; then
-    log_warn "Signature verification failed or not available; continuing since checksum matched"
+    sig_rc=$?
   fi
+  case ${sig_rc} in
+    0)
+      : # success already logged
+      ;;
+    1)
+      # Signature present but invalid -> hard fail
+      log_error "Signature verification failed for ${archive}"
+      return 1
+      ;;
+    2)
+      # Not available -> proceed (checksum already validated or skipped by user)
+      log_warn "No signature available for ${source_url}; proceeding without signature verification"
+      ;;
+  esac
 }
 
