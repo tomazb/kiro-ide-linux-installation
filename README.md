@@ -85,15 +85,21 @@ For more installation options, run:
 ./scripts/install-kiro.sh --help
 ```
 
-## Compatibility
+## Compatibility and recommended environments
 
-Works on all major Linux distributions:
+Best supported (fully automated dependencies and standard install flow):
 
-- Ubuntu/Debian
-- Fedora/CentOS/RHEL
-- Arch Linux
-- openSUSE
-- And more
+- Ubuntu/Debian (apt)
+- Fedora/RHEL/CentOS (dnf/yum)
+- Arch Linux (pacman)
+- openSUSE (zypper)
+
+Other environments and caveats:
+
+- Alpine Linux (apk): the installer does not auto-install dependencies with apk. Ensure these are present before running: bash, curl or wget, jq, openssl, tar, coreutils (sha256sum). Prefer the offline (--package) mode if needed. The Kiro app itself may require glibc on musl-based systems.
+- WSL/headless servers: desktop entry creation is optional; the core installation works. If update-desktop-database is absent, the step is skipped.
+- SELinux/restricted hosts: setting SUID on chrome-sandbox (4755) may be denied by policy; a warning is logged and installation proceeds.
+- PATH: system installs symlink to /usr/local/bin; user installs symlink to ~/.local/bin. Ensure those locations are in PATH.
 
 ## Requirements
 
