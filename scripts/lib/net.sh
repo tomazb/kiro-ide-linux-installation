@@ -5,6 +5,23 @@ IFS=$'\n\t'
 
 # Network helpers for downloading files with retry and cache support
 
+# Resolve CA bundle path if provided via KIRO_CA_BUNDLE (supports file: or direct path)
+kiro_net_resolve_ca_bundle() {
+  local val="${KIRO_CA_BUNDLE:-}"
+  if [[ -z "${val}" ]]; then
+    return 1
+  fi
+  if [[ "${val}" =~ ^file:(.+)$ ]]; then
+    val="${BASH_REMATCH[1]}"
+  fi
+  if [[ -f "${val}" ]]; then
+    printf '%s\n' "${val}"
+    return 0
+  fi
+  log_warn "KIRO_CA_BUNDLE is set but not a readable file: ${KIRO_CA_BUNDLE}"
+  return 1
+}
+
 kiro_net_download() {
   local url="$1"; shift
   local out="$1"; shift
@@ -29,15 +46,28 @@ kiro_net_download() {
     return 1
   fi
 
+  local ca_path=""
+  ca_path=$(kiro_net_resolve_ca_bundle || true)
+
   if command -v curl >/dev/null 2>&1; then
+    # Build curl args
+    local -a args=("-fsSL" "--retry" "${retries}" "--retry-all-errors" "--connect-timeout" "10")
+    if [[ -n "${ca_path}" ]]; then
+      args+=("--cacert" "${ca_path}")
+    fi
     # For HTTPS, enforce protocol; otherwise let curl handle (e.g., http if allowed)
     if [[ "${url}" =~ ^https:// ]]; then
-      curl --proto =https -fsSL --retry "${retries}" --retry-all-errors --connect-timeout 10 -o "${out}" "${url}"
-    else
-      curl -fsSL --retry "${retries}" --retry-all-errors --connect-timeout 10 -o "${out}" "${url}"
+      args=("--proto" "=https" "${args[@]}")
     fi
+    args+=("-o" "${out}" "${url}")
+    curl "${args[@]}"
   elif command -v wget >/dev/null 2>&1; then
-    wget -q -O "${out}" "${url}"
+    local -a args=("-q")
+    if [[ -n "${ca_path}" ]]; then
+      args+=("--ca-certificate=${ca_path}")
+    fi
+    args+=("-O" "${out}" "${url}")
+    wget "${args[@]}"
   else
     log_error "Neither curl nor wget is available"
     return 1

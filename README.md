@@ -149,6 +149,7 @@ Examples:
 ```
 
 Note: plain HTTP downloads are blocked by default. To allow (not recommended), set KIRO_ALLOW_INSECURE_HTTP=true.
+To pin a custom CA bundle for HTTPS downloads, pass --ca-bundle /path/to/ca-bundle.pem (or set KIRO_CA_BUNDLE). The file must be readable by the installer.
 
 For full details, see SECURITY.md.
 

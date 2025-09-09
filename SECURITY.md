@@ -38,6 +38,7 @@ Verification algorithm
 HTTP policy
 - By default, plain HTTP is refused for downloads. Use HTTPS or local file: URLs.
 - You can override this by setting KIRO_ALLOW_INSECURE_HTTP=true (not recommended).
+- Optional: Supply a custom CA bundle to pin trust anchors for HTTPS downloads via --ca-bundle /path/to/ca-bundle.pem or KIRO_CA_BUNDLE.
 
 Offline/local installation
 - Use --package to provide an explicit package:
@@ -50,10 +51,11 @@ Configuration
   - --checksum <hex|file:/path|url:https://...>
   - --sig <file:/path|url:...|base64>
   - --cert <file:/path|url:...>
+  - --ca-bundle /path/to/ca-bundle.pem
   - --require-verify (fail if neither checksum nor signature is available)
   - --skip-verify (bypass verification entirely)
 - Environment variables:
-  - KIRO_CHECKSUM, KIRO_SIG, KIRO_CERT, KIRO_REQUIRE_VERIFY, KIRO_SKIP_VERIFY
+  - KIRO_CHECKSUM, KIRO_SIG, KIRO_CERT, KIRO_CA_BUNDLE, KIRO_REQUIRE_VERIFY, KIRO_SKIP_VERIFY
   - KIRO_METADATA_URL (defaults in scripts/conf/defaults.conf)
 
 Examples

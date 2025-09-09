@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Helper for bats tests
-set -Eeuo pipefail
+set -Ee -o pipefail
 IFS=$'\n\t'
 
 # Ensure we run from repo root

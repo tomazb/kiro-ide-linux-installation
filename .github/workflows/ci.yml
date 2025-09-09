@@ -38,8 +38,10 @@ jobs:
           fi
 
   test:
-    name: Unit tests (bats)
+    name: Unit + Integration tests (bats) with strict verify
     runs-on: ubuntu-latest
+    env:
+      KIRO_REQUIRE_VERIFY: "true"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,15 +49,17 @@ jobs:
       - name: Install test deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y bats jq openssl
+          sudo apt-get install -y bats jq openssl tar
 
-      - name: Run bats tests
+      - name: Run bats tests (strict)
         run: |
           ./scripts/test.sh
 
   coverage:
     name: Coverage (kcov over bats)
     runs-on: ubuntu-latest
+    env:
+      KIRO_REQUIRE_VERIFY: "true"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
