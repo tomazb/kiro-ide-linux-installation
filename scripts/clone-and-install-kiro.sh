@@ -8,7 +8,7 @@ IFS=$'\n\t'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="${SCRIPT_DIR}/.."
 
-REPO_URL_DEFAULT="https://github.com/abhilashiig/kiro-ide-linux-installation"
+REPO_URL_DEFAULT="https://github.com/tomazb/kiro-ide-linux-installation"
 
 print_usage() {
   cat <<'USAGE'

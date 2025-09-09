@@ -9,7 +9,7 @@ Note: a refactored, safer, and idempotent installer now lives under scripts/. Th
 The easiest way to install Kiro is using our clone-and-install script:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/abhilashiig/kiro-ide-linux-installation/main/scripts/clone-and-install-kiro.sh | bash
+curl -fsSL https://raw.githubusercontent.com/tomazb/kiro-ide-linux-installation/main/scripts/clone-and-install-kiro.sh | bash
 ```
 
 This single command will:
