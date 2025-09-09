@@ -109,6 +109,31 @@ Other environments and caveats:
 
 The installer will automatically check and install other required dependencies.
 
+## Build a container image locally (no binary distribution)
+
+You can build a local container image that installs Kiro inside the image using this repository’s installer. This does not distribute Kiro binaries; the image is built on your machine.
+
+Example using Podman:
+
+```bash
+podman build -t kiro-runtime -f Containerfile .
+
+# Run with X11 (Linux desktop); may require allowing local connections
+xhost +local:  # allow local X access (consider security implications)
+podman run --rm \
+  -e DISPLAY \
+  -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
+  --device /dev/dri \
+  kiro-runtime
+```
+
+Notes:
+- This will download Kiro during the image build and install it to /opt/kiro, with /usr/local/bin/kiro symlink.
+- Running GUI apps in containers depends on host display and GPU setup; you may need additional flags on some hosts.
+- No images are published by this repository; you control builds and distribution yourself.
+
+See the full user guide in docs/USER_GUIDE.md for details.
+
 ## Security and Verification
 
 This installer prioritizes integrity checks and optional cryptographic verification when downloading releases.
