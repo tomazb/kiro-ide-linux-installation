@@ -225,7 +225,7 @@ kiro_download_icon() {
   local target_dir="$1"
   local need_sudo_flag="$2"
   local icon_dir="${target_dir}/resources/app/resources/linux"
-  local local_icon="${ROOT_DIR}/Kiro_1024x1024x32.png"
+  local local_icon="${ROOT_DIR}/assets/Kiro_1024x1024x32.png"
 
   if [[ "${need_sudo_flag}" == true ]]; then
     sudo mkdir -p "${icon_dir}"

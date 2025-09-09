@@ -654,7 +654,7 @@ download_favicon() {
     local need_sudo="$2"
     local icon_dir
     local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-    local local_icon="$script_dir/Kiro_1024x1024x32.png"
+    local local_icon="$script_dir/assets/Kiro_1024x1024x32.png"
     
     # Create target directory
     if [ "$need_sudo" = true ]; then
