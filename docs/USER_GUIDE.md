@@ -7,7 +7,7 @@ Overview
 - Entrypoints:
   - scripts/install-kiro.sh: main orchestrator (recommended)
   - scripts/clone-and-install-kiro.sh: clones repo to a temp dir and delegates to the orchestrator
-  - Top-level wrappers (install-kiro.sh, clone-and-install-kiro.sh) exist for backward compatibility and simply delegate to scripts/*
+  - Note: Legacy top-level wrappers were removed. Use scripts/install-kiro.sh and scripts/clone-and-install-kiro.sh.
 
 Repository layout
 - scripts/

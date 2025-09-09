@@ -2,7 +2,9 @@
 
 Automated installer for [Kiro](https://kiro.dev/), an AI-powered development environment. This repository provides scripts to easily install, update, and manage Kiro on any Linux distribution.
 
-Note: a refactored, safer, and idempotent installer now lives under scripts/. The legacy top-level scripts remain for compatibility until removed.
+Note: The refactored, safer, and idempotent installer lives under scripts/. Legacy top-level scripts have been removed; use the scripts/ paths.
+
+Fork notice: this repository is a maintained fork of the upstream at https://github.com/abhilashiig/kiro-ide-linux-installation.
 
 ## Quick Installation
 
