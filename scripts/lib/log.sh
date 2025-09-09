@@ -73,7 +73,10 @@ _log_emit() {
     json=$(printf '{"ts":"%s","level":"%s","pid":%d,"run_id":"%s","msg":%s}\n' \
       "${ts}" "${level}" "${pid}" "${KIRO_RUN_ID}" "$(jq -R -s '.' <<<"${msg}")")
     printf '%s' "${json}"
-    if [[ -n "${KIRO_LOG_FILE}" ]]; then printf '%s' "${json}" >>"${KIRO_LOG_FILE}"; fi
+    if [[ -n "${KIRO_LOG_FILE}" ]]; then
+      mkdir -p -- "$(dirname -- "${KIRO_LOG_FILE}")" 2>/dev/null || true
+      printf '%s' "${json}" >>"${KIRO_LOG_FILE}" || true
+    fi
     return 0
   fi
 
@@ -92,7 +95,10 @@ _log_emit() {
   fi
 
   printf '%b\n' "${line}"
-  if [[ -n "${KIRO_LOG_FILE}" ]]; then printf '%s\n' "${ts} [${level}] ${msg}" >>"${KIRO_LOG_FILE}"; fi
+  if [[ -n "${KIRO_LOG_FILE}" ]]; then
+    mkdir -p -- "$(dirname -- "${KIRO_LOG_FILE}")" 2>/dev/null || true
+    printf '%s\n' "${ts} [${level}] ${msg}" >>"${KIRO_LOG_FILE}" || true
+  fi
 }
 
 _log_enabled() {
