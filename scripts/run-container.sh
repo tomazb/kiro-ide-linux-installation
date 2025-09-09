@@ -38,6 +38,7 @@ IMAGE_NAME="kiro-runtime"
 IMAGE_TAG="latest"
 BACKEND="auto"
 USE_GPU=false
+AUTO_GPU=true
 CMD_ARGS=()
 
 while [[ $# -gt 0 ]]; do
@@ -47,14 +48,26 @@ while [[ $# -gt 0 ]]; do
     --tag) IMAGE_TAG="$2"; shift 2;;
     --backend) BACKEND="$2"; shift 2;;
     --gpu) USE_GPU=true; shift;;
+    --no-auto-gpu) AUTO_GPU=false; shift;;
     -h|--help) usage; exit 0;;
     --) shift; CMD_ARGS=("$@"); break;;
     *) echo "Unknown option: $1" >&2; usage; exit 2;;
   esac
 done
 
+# Engine detection: honor explicit, then env, then common engines
 if [[ -z "$ENGINE" ]]; then
-  if command -v podman >/dev/null 2>&1; then ENGINE=podman; elif command -v docker >/dev/null 2>&1; then ENGINE=docker; else echo "Neither podman nor docker found" >&2; exit 1; fi
+  if [[ -n "${CONTAINER_ENGINE:-}" ]] && command -v "${CONTAINER_ENGINE}" >/dev/null 2>&1; then
+    ENGINE="${CONTAINER_ENGINE}"
+  elif command -v podman >/dev/null 2>&1; then
+    ENGINE=podman
+  elif command -v docker >/dev/null 2>&1; then
+    ENGINE=docker
+  elif command -v nerdctl >/dev/null 2>&1; then
+    ENGINE=nerdctl
+  else
+    echo "No container engine found (podman/docker/nerdctl)." >&2; exit 1
+  fi
 fi
 
 # Auto-detect backend if requested
@@ -76,6 +89,11 @@ fi
 
 RUN_ARGS=("${ENGINE}" run --rm)
 
+# Auto GPU if not explicitly requested/disabled and device exists
+if [[ "${USE_GPU}" == false && "${AUTO_GPU}" == true && -e /dev/dri ]]; then
+  echo "Auto-enabling GPU device (/dev/dri). Use --no-auto-gpu to disable." >&2
+  USE_GPU=true
+fi
 # GPU device if requested
 if [[ "${USE_GPU}" == true ]]; then
   RUN_ARGS+=(--device /dev/dri)
