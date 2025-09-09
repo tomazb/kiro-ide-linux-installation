@@ -28,12 +28,95 @@ kiro_extract_signature_from_metadata() {
 
 # Verify signature using either provided env vars or metadata
 # Inputs (env or metadata): KIRO_SIGNATURE_B64 (base64), KIRO_CERT_PEM_CONTENT (PEM content)
+# Resolve PEM content from an argument (file:/, url:, or path)
+kiro_resolve_pem_arg() {
+  local arg="$1"
+  if [[ -z "${arg}" ]]; then return 1; fi
+  local tmp
+  if [[ "${arg}" =~ ^file:(.+)$ ]]; then
+    cat "${BASH_REMATCH[1]}"
+    return 0
+  fi
+  if [[ "${arg}" =~ ^url:(.+)$ ]]; then
+    tmp=$(mktemp -t kiro.pem.XXXXXX)
+    trap 'rm -f "'"${tmp}"'"' RETURN
+    if ! kiro_net_download "${BASH_REMATCH[1]}" "${tmp}" 5; then return 1; fi
+    cat "${tmp}"
+    return 0
+  fi
+  if [[ -f "${arg}" ]]; then
+    cat "${arg}"
+    return 0
+  fi
+  return 1
+}
+
+# Resolve signature into base64 from an argument (file:/, url:, or path, or base64 string)
+kiro_resolve_signature_arg() {
+  local arg="$1"
+  if [[ -z "${arg}" ]]; then return 1; fi
+  if [[ "${arg}" =~ ^[A-Za-z0-9+/=]+$ ]]; then
+    echo "${arg}"
+    return 0
+  fi
+  local tmp
+  if [[ "${arg}" =~ ^file:(.+)$ ]]; then
+    base64 < "${BASH_REMATCH[1]}" | tr -d "\n"
+    return 0
+  fi
+  if [[ "${arg}" =~ ^url:(.+)$ ]]; then
+    tmp=$(mktemp -t kiro.sig.XXXXXX)
+    trap 'rm -f "'"${tmp}"'"' RETURN
+    if ! kiro_net_download "${BASH_REMATCH[1]}" "${tmp}" 5; then return 1; fi
+    base64 < "${tmp}" | tr -d "\n"
+    return 0
+  fi
+  if [[ -f "${arg}" ]]; then
+    base64 < "${arg}" | tr -d "\n"
+    return 0
+  fi
+  return 1
+}
+
+# Try to fetch a certificate from the release directory alongside the archive
+kiro_try_fetch_cert_from_release_dir() {
+  local source_url="$1"
+  # Derive base dir
+  local base="${source_url%/*}"
+  local cert_url="${base}/certificate.pem"
+  local tmp
+  tmp=$(mktemp -t kiro.pem.XXXXXX)
+  trap 'rm -f "'"${tmp}"'"' RETURN
+  if kiro_net_download "${cert_url}" "${tmp}" 3 2>/dev/null; then
+    cat "${tmp}"
+    return 0
+  fi
+  return 1
+}
+
 kiro_verify_signature() {
   local archive="$1"; shift
   local source_url="$1"; shift
 
-  # Prefer explicit env overrides if set; otherwise attempt extraction from metadata
-  if [[ -z "${KIRO_SIGNATURE_B64:-}" || -z "${KIRO_CERT_PEM_CONTENT:-}" ]]; then
+  # Determine certificate content
+  if [[ -z "${KIRO_CERT_PEM_CONTENT:-}" ]]; then
+    if [[ -n "${KIRO_CERT:-}" ]]; then
+      KIRO_CERT_PEM_CONTENT=$(kiro_resolve_pem_arg "${KIRO_CERT}" || true)
+    fi
+  fi
+  if [[ -z "${KIRO_CERT_PEM_CONTENT:-}" ]]; then
+    kiro_extract_signature_from_metadata "${source_url}" || true
+  fi
+  if [[ -z "${KIRO_CERT_PEM_CONTENT:-}" ]]; then
+    KIRO_CERT_PEM_CONTENT=$(kiro_try_fetch_cert_from_release_dir "${source_url}" || true)
+  fi
+
+  # Determine signature content (base64)
+  if [[ -z "${KIRO_SIGNATURE_B64:-}" && -n "${KIRO_SIG:-}" ]]; then
+    KIRO_SIGNATURE_B64=$(kiro_resolve_signature_arg "${KIRO_SIG}" || true)
+  fi
+  if [[ -z "${KIRO_SIGNATURE_B64:-}" ]]; then
+    # metadata may contain a signature
     kiro_extract_signature_from_metadata "${source_url}" || true
   fi
   if [[ -z "${KIRO_SIGNATURE_B64:-}" || -z "${KIRO_CERT_PEM_CONTENT:-}" ]]; then
