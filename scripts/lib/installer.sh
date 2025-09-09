@@ -243,7 +243,7 @@ kiro_install_main() {
   kiro_prepare_paths "${user_only}"
 
   local tmp; tmp=$(kiro_fs_mktmpdir)
-  trap 'rm -rf "${tmp}"' RETURN
+  trap "rm -rf '${tmp}'" RETURN
 
   kiro_fetch_metadata "${tmp}"
   if ! kiro_check_update_needed "${INSTALL_PREFIX}" "${force_update}"; then
