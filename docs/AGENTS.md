@@ -22,17 +22,24 @@ Coding standards
 
 Testing & coverage
 - Provide unit tests for each library using bats.
-- Integration tests run end-to-end without network by using cached artifacts.
-- Use kcov or bashcov to gather coverage. Keep a running TEST-IMPROVEMENTS.md with coverage gaps and tasks.
+- Integration tests run end-to-end; include an offline path using a signed tarball and checksum (see tests/integration).
+- Use kcov (in CI) to gather coverage. Keep TEST-IMPROVEMENTS.md current with coverage gaps and tasks.
+- CI enforces strict verification (KIRO_REQUIRE_VERIFY=true); tests should provide checksum and/or signature.
 
 Release & versioning
 - Maintain backward compatibility for CLI flags. Emit deprecation warnings when renaming.
 - Tag releases and attach checksums. Document changes in CHANGELOG.
 
 Security
-- Verify downloads via signature or checksums. Use atomic file operations. Implement rollback.
+- Verify downloads via checksum and/or signature; prefer providing both in CI. Use atomic file operations. Implement rollback.
+- Block plain HTTP downloads by default (KIRO_ALLOW_INSECURE_HTTP can override for exceptional cases).
+- Support custom CA bundle (--ca-bundle|KIRO_CA_BUNDLE) for TLS trust pinning.
 - Respect user preference to use sudo for any virsh operations (not currently used but enforced globally).
 
 Contributing
 - Open PRs against the refactoring branch. Ensure tests and coverage thresholds pass.
+- Run local checks:
+  - Lint: bash scripts/lint.sh (shellcheck + shfmt)
+  - Unit + integration tests: ./scripts/test.sh
+- For offline test, see tests/integration/scripts/install_offline.sh
 

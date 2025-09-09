@@ -5,15 +5,15 @@ This document tracks testing coverage, gaps, and planned improvements. Update th
 Current status
 - Coverage tooling: kcov integrated in CI (artifact uploaded)
 - Unit tests: basic coverage for verify/signature/version (bats)
-- Integration tests: pending
+- Integration tests: basic offline install test in CI (strict verify enforced); more pending
 - E2E tests: pending
+- CI: strict verification enforced (KIRO_REQUIRE_VERIFY=true)
 
 Immediate priorities
 1. Add unit tests for scripts/lib/log.sh (levels, colors, JSON output)
 2. Add unit tests for scripts/lib/config.sh (precedence, defaults)
 3. Add unit tests for scripts/lib/cli.sh (parsing, backward compatibility)
 4. Add integration test for idempotent install path with mocked downloads
-5. Expand security tests (negative paths, offline mode)
 
 Task list
 - [x] Introduce kcov in CI and collect coverage metrics
@@ -25,5 +25,6 @@ Task list
 - [ ] Add e2e matrix across common distros
 - [x] Add negative-path tests: checksum mismatch, invalid signature, insecure http blocked
 - [x] Add offline/local signature autodetection test (file: URL with colocated certificate.pem/signature.bin)
+- [x] Enforce strict verification in CI (KIRO_REQUIRE_VERIFY=true)
 - [ ] Document remaining gaps and prioritize
 
