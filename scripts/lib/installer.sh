@@ -223,12 +223,12 @@ kiro_create_desktop_entry() {
   fi
 
   local desktop_content
-  desktop_content="[Desktop Entry]\nName=Kiro\nComment=Kiro - AI-powered development environment\nExec=${pfx}/bin/kiro %F\nIcon=${icon_path}\nTerminal=false\nType=Application\nCategories=Development;IDE;\nMimeType=text/plain;inode/directory;\nStartupWMClass=kiro\nStartupNotify=true\n"
+  desktop_content=$'[Desktop Entry]\nName=Kiro\nComment=Kiro - AI-powered development environment\nExec='${pfx}'/bin/kiro %F\nIcon='${icon_path}'\nTerminal=false\nType=Application\nCategories=Development;IDE;\nMimeType=text/plain;inode/directory;\nStartupWMClass=kiro\nStartupNotify=true\n'
 
   local desktop_file="${desktop_dir}/kiro.desktop"
   mkdir -p "${desktop_dir}"
   if [[ "${need_sudo_flag}" == true ]]; then
-    printf '%b' "${desktop_content}" | sudo tee "${desktop_file}" >/dev/null
+    printf '%s' "${desktop_content}" | sudo tee "${desktop_file}" >/dev/null
     sudo chmod +x "${desktop_file}"
   else
     kiro_fs_atomic_write "${desktop_file}" <<<"${desktop_content}"
