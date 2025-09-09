@@ -99,6 +99,49 @@ kiro_download_and_extract() {
   local extract_dir="${tmpdir}/extracted"
   mkdir -p "${extract_dir}"
 
+  # If a local or explicit package is provided, use it (supports file:, http(s) URLs, or local paths)
+  if [[ -n "${KIRO_PACKAGE_LOCAL:-}" ]]; then
+    local archive=""
+    local source_url=""
+    if [[ "${KIRO_PACKAGE_LOCAL}" =~ ^file:(.+)$ ]]; then
+      archive="${BASH_REMATCH[1]}"
+      source_url="${KIRO_PACKAGE_LOCAL}"
+    elif [[ -f "${KIRO_PACKAGE_LOCAL}" ]]; then
+      archive="${KIRO_PACKAGE_LOCAL}"
+      source_url="file:${KIRO_PACKAGE_LOCAL}"
+    else
+      # Treat as URL
+      local out="${tmpdir}/kiro.tar.gz"
+      log_info "Downloading package from explicit source: ${KIRO_PACKAGE_LOCAL}"
+      kiro_net_download "${KIRO_PACKAGE_LOCAL}" "${out}" 5
+      archive="${out}"
+      source_url="${KIRO_PACKAGE_LOCAL}"
+    fi
+
+    if ! kiro_verify_archive "${archive}" "${source_url}"; then
+      return 1
+    fi
+    log_info "Extracting package..."
+    tar -xzf "${archive}" -C "${extract_dir}"
+
+    local payload="${extract_dir}"
+    if [[ -d "${extract_dir}/Kiro" ]]; then
+      payload="${extract_dir}/Kiro"
+    else
+      payload="${extract_dir}"
+    fi
+
+    if [[ ! -e "${payload}/bin/kiro" && ! -e "${payload}/kiro" ]]; then
+      log_error "Extracted payload is missing kiro executable"
+      find "${extract_dir}" -maxdepth 2 -type f -o -type d | sort | head -n 50 | sed 's/^/ > /'
+      return 1
+    fi
+
+    KIRO_PAYLOAD_DIR="${payload}"
+    return 0
+  fi
+
+  # Otherwise, fetch via metadata URL (default online flow)
   # Cache path per version
   local cache_dir="${KIRO_CACHE_DIR:-${HOME}/.cache/kiro}/releases/${KIRO_CURRENT_VERSION}"
   mkdir -p "${cache_dir}"
@@ -281,9 +324,14 @@ kiro_install_main() {
   local tmp; tmp=$(kiro_fs_mktmpdir)
   trap "rm -rf '${tmp}'" RETURN
 
-  kiro_fetch_metadata "${tmp}"
-  if ! kiro_check_update_needed "${INSTALL_PREFIX}" "${force_update}"; then
-    return 0
+  # If explicit package is provided, skip metadata and update checks
+  if [[ -z "${KIRO_PACKAGE_LOCAL:-}" ]]; then
+    kiro_fetch_metadata "${tmp}"
+    if ! kiro_check_update_needed "${INSTALL_PREFIX}" "${force_update}"; then
+      return 0
+    fi
+  else
+    log_info "Using explicit package via --package; skipping metadata and update checks"
   fi
 
   kiro_download_and_extract "${tmp}"

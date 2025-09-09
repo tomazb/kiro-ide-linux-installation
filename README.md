@@ -139,9 +139,15 @@ Examples:
 # Provide a signature and certificate from local files
 ./scripts/install-kiro.sh --sig file:/path/to/signature.bin --cert file:/path/to/certificate.pem
 
+# Offline/local install from an explicit package (with optional checksum/signature)
+./scripts/install-kiro.sh --package file:/tmp/kiro.tar.gz --checksum file:/tmp/kiro.tar.gz.sha256
+# If certificate.pem and signature.bin are next to the archive, they are auto-detected
+
 # Bypass verification (not recommended)
 ./scripts/install-kiro.sh --skip-verify
 ```
+
+Note: plain HTTP downloads are blocked by default. To allow (not recommended), set KIRO_ALLOW_INSECURE_HTTP=true.
 
 For full details, see SECURITY.md.
 

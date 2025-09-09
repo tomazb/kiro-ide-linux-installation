@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
+# Legacy wrapper: delegate to refactored clone script under scripts/
+# Maintained for backward compatibility.
 
-# Kiro Clone and Install Script
-# This script clones the Kiro installation repo and runs the installer
-
-set -e
+set -Eeuo pipefail
+IFS=$'\n\t'
 
 # Colors for terminal output
 RED='\033[0;31m'
@@ -136,23 +136,11 @@ print_usage() {
     echo ""
 }
 
-# Main script execution
-print_header
-
-# Check for help flag
-for arg in "$@"; do
-    case $arg in
-        --help | -h)
-            print_usage
-            exit 0
-            ;;
-    esac
-done
-
-# Execute main workflow
-check_dependencies
-clone_repo
-verify_install_script
-run_installer "$@"
-
-echo -e "${GREEN}Script execution completed!${NC}"
+# Delegate to the refactored script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -x "${SCRIPT_DIR}/scripts/clone-and-install-kiro.sh" ]]; then
+  exec bash "${SCRIPT_DIR}/scripts/clone-and-install-kiro.sh" "$@"
+else
+  echo "Refactored clone script not found at ${SCRIPT_DIR}/scripts/clone-and-install-kiro.sh" >&2
+  exit 1
+fi

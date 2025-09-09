@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
+# Legacy wrapper: delegate to refactored installer under scripts/
+# Maintained for backward compatibility.
 
-# Kiro Installer Script
-# This script installs Kiro on any Linux distribution
-
-set -e
+set -Eeuo pipefail
+IFS=$'\n\t'
 
 # Colors for terminal output
 RED='\033[0;31m'
@@ -712,81 +712,11 @@ download_favicon() {
     return 1
 }
 
-# Main script execution
-print_header
-
-# Parse command line arguments
-ACTION="install"
-USER_ONLY=false
-FORCE_UPDATE=false
-CLEAN_UNINSTALL=false
-
-for arg in "$@"; do
-    case $arg in
-        --install | --update)
-            ACTION="install"  # Both install and update use the same function now
-            shift
-            ;;
-        --uninstall)
-            ACTION="uninstall"
-            shift
-            ;;
-        --user)
-            USER_ONLY=true
-            shift
-            ;;
-        --force)
-            FORCE_UPDATE=true
-            shift
-            ;;
-        --clean)
-            CLEAN_UNINSTALL=true
-            shift
-            ;;
-        --help)
-            print_usage
-            exit 0
-            ;;
-        *)
-            echo -e "${RED}Unknown option: $arg${NC}"
-            print_usage
-            exit 1
-            ;;
-    esac
-done
-
-# Execute the selected action
-if [ "$ACTION" == "install" ]; then
-    check_dependencies
-    if [ "$USER_ONLY" = true ] && [ "$FORCE_UPDATE" = true ]; then
-        install_kiro "--user" "--force"
-    elif [ "$USER_ONLY" = true ]; then
-        install_kiro "--user"
-    elif [ "$FORCE_UPDATE" = true ]; then
-        install_kiro "--force"
-    else
-        install_kiro
-    fi
-elif [ "$ACTION" == "uninstall" ]; then
-    if [ "$USER_ONLY" = true ]; then
-        if [ "$CLEAN_UNINSTALL" = true ]; then
-            uninstall_kiro "--user" "--clean"
-        else
-            uninstall_kiro "--user"
-        fi
-    else
-        if [ "$CLEAN_UNINSTALL" = true ]; then
-            uninstall_kiro "" "--clean"
-        else
-            uninstall_kiro
-        fi
-    fi
+# Delegate immediately to refactored installer to ensure secure verification and consistent behavior.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -x "${SCRIPT_DIR}/scripts/install-kiro.sh" ]]; then
+  exec bash "${SCRIPT_DIR}/scripts/install-kiro.sh" "$@"
+else
+  echo "Refactored installer not found at ${SCRIPT_DIR}/scripts/install-kiro.sh" >&2
+  exit 1
 fi
-
-# Clean up temporary files
-if [ -d "$TEMP_DIR" ]; then
-    echo -e "${YELLOW}Cleaning up temporary files...${NC}"
-    rm -rf "$TEMP_DIR"
-fi
-
-exit 0

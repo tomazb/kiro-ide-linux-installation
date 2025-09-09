@@ -235,7 +235,7 @@ kiro_fetch_remote_checksum_for_url() {
   trap 'rm -f "'"${tmp}"'"' RETURN
   local candidate
   for candidate in "${base_url}.sha256" "${base_url}.sha256sum"; do
-    if kiro_net_download "${candidate}" "${tmp}" 3 2>/dev/null; then
+    if kiro_net_download "${candidate}" "${tmp}" 3 >/dev/null 2>&1; then
       local digest
       digest=$(kiro_parse_checksum_file "${tmp}")
       if [[ -n "${digest}" ]]; then
@@ -277,10 +277,8 @@ kiro_verify_archive() {
 
   # Attempt signature verification if metadata/cert+sig available
   local sig_rc
-  sig_rc=0
-  if ! kiro_verify_signature "${archive}" "${source_url}"; then
-    sig_rc=$?
-  fi
+  kiro_verify_signature "${archive}" "${source_url}"
+  sig_rc=$?
   case ${sig_rc} in
     0)
       : # success already logged

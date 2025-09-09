@@ -13,6 +13,7 @@ Immediate priorities
 2. Add unit tests for scripts/lib/config.sh (precedence, defaults)
 3. Add unit tests for scripts/lib/cli.sh (parsing, backward compatibility)
 4. Add integration test for idempotent install path with mocked downloads
+5. Expand security tests (negative paths, offline mode)
 
 Task list
 - [x] Introduce kcov in CI and collect coverage metrics
@@ -22,5 +23,7 @@ Task list
 - [ ] Add bats unit tests for cli.sh
 - [ ] Add integration test harness with Docker
 - [ ] Add e2e matrix across common distros
+- [x] Add negative-path tests: checksum mismatch, invalid signature, insecure http blocked
+- [x] Add offline/local signature autodetection test (file: URL with colocated certificate.pem/signature.bin)
 - [ ] Document remaining gaps and prioritize
 

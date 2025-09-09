@@ -35,6 +35,16 @@ Verification algorithm
 5. Bypass
    - You can bypass verification with --skip-verify or KIRO_SKIP_VERIFY=true (not recommended)
 
+HTTP policy
+- By default, plain HTTP is refused for downloads. Use HTTPS or local file: URLs.
+- You can override this by setting KIRO_ALLOW_INSECURE_HTTP=true (not recommended).
+
+Offline/local installation
+- Use --package to provide an explicit package:
+  - --package file:/path/to/kiro.tar.gz
+  - You may also pass a URL; verification still applies
+- If certificate.pem and signature.bin are colocated with the archive, they will be auto-detected for signature verification.
+
 Configuration
 - CLI flags (see scripts/lib/cli.sh):
   - --checksum <hex|file:/path|url:https://...>
