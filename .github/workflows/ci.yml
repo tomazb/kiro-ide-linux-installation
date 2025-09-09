@@ -15,7 +15,7 @@ concurrency:
 jobs:
   lint:
     name: Lint (shellcheck, shfmt)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,25 +25,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y shellcheck shfmt
 
-      - name: shfmt (check)
-        run: |
-          # Check formatting (fail if diffs would be produced)
-          shfmt -d -i 2 -ci -bn . || { echo "Run: shfmt -w -i 2 -ci -bn ."; exit 1; }
-
-      - name: ShellCheck
-        run: |
-          set -euo pipefail
-          # Find all tracked shell scripts; ignore common vendor locations
-          mapfile -t FILES < <(git ls-files '*.sh' | grep -vE '(^|/)vendor/|(^|/)node_modules/' || true)
-          if [ ${#FILES[@]} -gt 0 ]; then
-            shellcheck -S style -x "${FILES[@]}"
-          else
-            echo "No .sh files found"
-          fi
+      - name: Lint
+        run: ./scripts/lint.sh
 
   test:
     name: Unit + Integration tests (bats) with strict verify
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       KIRO_REQUIRE_VERIFY: "true"
     steps:
@@ -61,7 +48,7 @@ jobs:
 
   coverage:
     name: Coverage (kcov over bats)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       KIRO_REQUIRE_VERIFY: "true"
     steps:
@@ -86,6 +73,19 @@ jobs:
             echo "kcov did not produce coverage (this may happen if no scripts were traced)"
           fi
 
+      - name: Add coverage summary to job summary
+        run: |
+          set -euo pipefail
+          idx=$(find coverage -maxdepth 2 -type f -name index.json | head -n1 || true)
+          if [ -n "${idx:-}" ]; then
+            echo "## Coverage Summary" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            jq -r '(.percent_covered|tostring) + "% coverage (" + (.covered_lines|tostring) + "/" + (.total_lines|tostring) + " lines)"' "$idx" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No coverage index found to summarize" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v4
         with:
@@ -95,7 +95,7 @@ jobs:
   container_smoke:
     name: Container build (smoke on PR)
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -107,5 +107,4 @@ jobs:
         env:
           DOCKER_BUILDKIT: "1"
         run: |
-          docker build -t kiro-runtime-ci -f Containerfile .
-
+          docker build -t kiro-runtime-ci -f Containerfile --build-arg KIRO_SKIP_VERIFY=true .

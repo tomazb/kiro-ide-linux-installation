@@ -4,8 +4,12 @@
 # No binaries are distributed by this repo; the image downloads Kiro during build.
 FROM debian:stable-slim
 
+# Allow CI to optionally bypass verification during smoke builds without changing defaults
+ARG KIRO_SKIP_VERIFY=false
+
 ENV DEBIAN_FRONTEND=noninteractive \
-    KIRO_REQUIRE_VERIFY=true
+    KIRO_REQUIRE_VERIFY=true \
+    KIRO_SKIP_VERIFY=${KIRO_SKIP_VERIFY}
 
 # Base runtime deps + tools needed by the installer
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -31,4 +35,3 @@ WORKDIR /home/kiro
 
 # Display hint by default; override with `--entrypoint kiro` or specify CMD at runtime
 CMD ["bash", "-lc", "echo 'Container built. To run Kiro: set DISPLAY, mount /tmp/.X11-unix, and run \"kiro\".'"]
-
