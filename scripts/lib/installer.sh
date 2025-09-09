@@ -141,13 +141,21 @@ kiro_prepare_paths() {
 kiro_set_permissions() {
   local pfx="$1"
   if [[ -x "${pfx}/kiro" ]]; then
-    ${NEED_SUDO:+sudo } chmod +x "${pfx}/kiro" || true
+    if [[ "${NEED_SUDO}" == true ]]; then
+      sudo chmod +x "${pfx}/kiro" || true
+    else
+      chmod +x "${pfx}/kiro" || true
+    fi
   fi
   if [[ -x "${pfx}/bin/kiro" ]]; then
-    ${NEED_SUDO:+sudo } chmod +x "${pfx}/bin/kiro" || true
+    if [[ "${NEED_SUDO}" == true ]]; then
+      sudo chmod +x "${pfx}/bin/kiro" || true
+    else
+      chmod +x "${pfx}/bin/kiro" || true
+    fi
   fi
   if [[ -e "${pfx}/chrome-sandbox" ]]; then
-    if ${NEED_SUDO:-false}; then
+    if [[ "${NEED_SUDO}" == true ]]; then
       sudo chmod 4755 "${pfx}/chrome-sandbox" || log_warn "Failed to set SUID on chrome-sandbox"
     else
       chmod 4755 "${pfx}/chrome-sandbox" || log_warn "Failed to set SUID on chrome-sandbox"
