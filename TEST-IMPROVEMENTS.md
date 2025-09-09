@@ -3,8 +3,8 @@
 This document tracks testing coverage, gaps, and planned improvements. Update this as PRs land.
 
 Current status
-- Coverage tooling: to be added (kcov/bashcov)
-- Unit tests: pending
+- Coverage tooling: kcov integrated in CI (artifact uploaded)
+- Unit tests: basic coverage for verify/signature/version (bats)
 - Integration tests: pending
 - E2E tests: pending
 
@@ -15,7 +15,7 @@ Immediate priorities
 4. Add integration test for idempotent install path with mocked downloads
 
 Task list
-- [ ] Introduce kcov in CI and collect coverage metrics
+- [x] Introduce kcov in CI and collect coverage metrics
 - [ ] Create coverage badge and thresholds
 - [ ] Add bats unit tests for log.sh
 - [ ] Add bats unit tests for config.sh

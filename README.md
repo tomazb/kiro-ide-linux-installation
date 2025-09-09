@@ -101,6 +101,50 @@ Works on all major Linux distributions:
 
 The installer will automatically check and install other required dependencies.
 
+## Security and Verification
+
+This installer prioritizes integrity checks and optional cryptographic verification when downloading releases.
+
+- HTTPS is used for all network requests
+- SHA-256 checksums are validated when available
+- Optional signature verification is performed when a certificate and signature are available (from metadata or colocated files)
+- Verification can be customized or bypassed explicitly (not recommended)
+
+Verification flow (high level):
+1. The installer fetches release metadata from `KIRO_METADATA_URL` (see scripts/conf/defaults.conf)
+2. It downloads the release archive
+3. It attempts to obtain an expected SHA-256 digest, in this order:
+   - From `--checksum <hex|file:/path|url:https://...>` (or `KIRO_CHECKSUM`)
+   - From a remote checksum file derived from the package URL: `<url>.sha256` or `<url>.sha256sum`
+4. If a checksum is available, it is compared with the computed digest; mismatches abort the install
+5. Signature verification is then attempted if a certificate and signature are available:
+   - Certificate and signature are sourced from (first match wins):
+     - CLI flags `--cert <file:/path|url:...>` and `--sig <file:/path|url:...|base64>`
+     - Environment variables `KIRO_CERT` / `KIRO_SIG`
+     - Installer metadata (certificatePem and release signature)
+     - Files colocated with the archive: `certificate.pem` and `signature.bin`
+   - If both are present, the installer verifies the archive using OpenSSL (supports SHA-512 or SHA-256 signatures)
+   - If signature verification fails, the install aborts; if not available, the installer proceeds with a warning
+
+To bypass verification explicitly (not recommended), pass `--skip-verify` or set `KIRO_SKIP_VERIFY=true`.
+
+Examples:
+```bash
+# Pin a checksum from a URL
+./scripts/install-kiro.sh --checksum url:https://example.com/releases/kiro.tar.gz.sha256
+
+# Pin a literal hexadecimal checksum
+./scripts/install-kiro.sh --checksum 2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824
+
+# Provide a signature and certificate from local files
+./scripts/install-kiro.sh --sig file:/path/to/signature.bin --cert file:/path/to/certificate.pem
+
+# Bypass verification (not recommended)
+./scripts/install-kiro.sh --skip-verify
+```
+
+For full details, see SECURITY.md.
+
 ## License
 
 This installer script is provided as-is. Kiro itself is a product of AWS and subject to its own licensing terms.

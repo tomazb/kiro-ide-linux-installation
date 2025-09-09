@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint (shellcheck, shfmt)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install linters
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck shfmt
+
+      - name: shfmt (check)
+        run: |
+          # Check formatting (fail if diffs would be produced)
+          shfmt -d -i 2 -ci -bn . || { echo "Run: shfmt -w -i 2 -ci -bn ."; exit 1; }
+
+      - name: ShellCheck
+        run: |
+          set -euo pipefail
+          # Find all tracked shell scripts; ignore common vendor locations
+          mapfile -t FILES < <(git ls-files '*.sh' | grep -vE '(^|/)vendor/|(^|/)node_modules/' || true)
+          if [ ${#FILES[@]} -gt 0 ]; then
+            shellcheck -S style -x "${FILES[@]}"
+          else
+            echo "No .sh files found"
+          fi
+
+  test:
+    name: Unit tests (bats)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install test deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats jq openssl
+
+      - name: Run bats tests
+        run: |
+          ./scripts/test.sh
+
+  coverage:
+    name: Coverage (kcov over bats)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install coverage deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats kcov jq openssl
+
+      - name: Generate coverage with kcov
+        run: |
+          set -euo pipefail
+          mkdir -p coverage
+          # Include only our scripts, exclude tests
+          kcov --include-pattern=scripts --exclude-pattern=tests coverage bats tests/unit || true
+          # Summarize coverage if kcov produced it
+          if ls coverage/*/index.json >/dev/null 2>&1; then
+            echo "Coverage generated"
+          else
+            echo "kcov did not produce coverage (this may happen if no scripts were traced)"
+          fi
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+
