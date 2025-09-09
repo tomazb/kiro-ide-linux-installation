@@ -23,7 +23,7 @@ Coding standards
 Testing & coverage
 - Provide unit tests for each library using bats.
 - Integration tests run end-to-end; include an offline path using a signed tarball and checksum (see tests/integration).
-- Use kcov (in CI) to gather coverage. Keep TEST-IMPROVEMENTS.md current with coverage gaps and tasks.
+- Use kcov (in CI) to gather coverage. Keep docs/TEST-IMPROVEMENTS.md current with coverage gaps and tasks.
 - CI enforces strict verification (KIRO_REQUIRE_VERIFY=true); tests should provide checksum and/or signature.
 
 Release & versioning
