@@ -223,7 +223,20 @@ kiro_create_desktop_entry() {
   fi
 
   local desktop_content
-  desktop_content=$'[Desktop Entry]\nName=Kiro\nComment=Kiro - AI-powered development environment\nExec='${pfx}'/bin/kiro %F\nIcon='${icon_path}'\nTerminal=false\nType=Application\nCategories=Development;IDE;\nMimeType=text/plain;inode/directory;\nStartupWMClass=kiro\nStartupNotify=true\n'
+  desktop_content=$(cat <<EOF
+[Desktop Entry]
+Name=Kiro
+Comment=Kiro - AI-powered development environment
+Exec=${pfx}/bin/kiro %F
+Icon=${icon_path}
+Terminal=false
+Type=Application
+Categories=Development;IDE;
+MimeType=text/plain;inode/directory;
+StartupWMClass=kiro
+StartupNotify=true
+EOF
+)
 
   local desktop_file="${desktop_dir}/kiro.desktop"
   mkdir -p "${desktop_dir}"
