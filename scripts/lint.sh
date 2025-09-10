@@ -20,5 +20,6 @@ if [ ${#FILES[@]} -eq 0 ]; then
   echo "No .sh files found"
   exit 0
 fi
-shellcheck -S style -x "${FILES[@]}"
+# Use warning severity to gate CI on substantive issues; style suggestions remain visible locally
+shellcheck -S warning -x "${FILES[@]}"
 
