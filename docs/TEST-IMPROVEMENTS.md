@@ -1,0 +1,37 @@
+# Test coverage and improvement log for Kiro installer
+
+This document tracks testing coverage, gaps, and planned improvements. Update this as PRs land.
+
+Current status
+- Coverage tooling: kcov integrated in CI (artifact uploaded)
+- Unit tests: basic coverage for verify/signature/version (bats)
+- Integration tests: basic offline install test in CI (strict verify enforced); more pending
+- E2E tests: pending
+- CI: strict verification enforced (KIRO_REQUIRE_VERIFY=true)
+
+Recent CI improvements
+- Coverage summary is now written directly to the GitHub job summary for quick visibility, in addition to uploading the full artifact.
+- Container smoke build can bypass verification only in CI via a build-arg, preserving strict verification elsewhere.
+
+Immediate priorities
+1. Add unit tests for scripts/lib/log.sh (levels, colors, JSON output)
+2. Add unit tests for scripts/lib/config.sh (precedence, defaults)
+3. Add unit tests for scripts/lib/cli.sh (parsing, backward compatibility)
+4. Add integration test for idempotent install path with mocked downloads
+
+Task list
+- [x] Introduce kcov in CI and collect coverage metrics
+- [ ] Create coverage badge and thresholds
+- [ ] Add bats unit tests for log.sh
+- [ ] Add bats unit tests for config.sh
+- [ ] Add bats unit tests for cli.sh
+- [ ] Add integration test harness with Docker
+- [ ] Add e2e matrix across common distros
+- [x] Add negative-path tests: checksum mismatch, invalid signature, insecure http blocked
+- [x] Add offline/local signature autodetection test (file: URL with colocated certificate.pem/signature.bin)
+- [x] Enforce strict verification in CI (KIRO_REQUIRE_VERIFY=true)
+- [x] Add container smoke build on pull requests
+- [ ] Document remaining gaps and prioritize
+- [ ] Evaluate coverage thresholds and badges for future improvements
+- [ ] Restore stricter ShellCheck severity once codebase formatting is complete
+

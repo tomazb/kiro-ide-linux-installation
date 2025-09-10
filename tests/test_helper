@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Helper for bats tests
+set -Ee -o pipefail
+IFS=$'\n\t'
+
+# Ensure we run from repo root
+cd "$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+

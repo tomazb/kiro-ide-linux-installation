@@ -1,0 +1,110 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint (shellcheck, shfmt)
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install linters
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck shfmt
+
+      - name: Lint
+        run: ./scripts/lint.sh
+
+  test:
+    name: Unit + Integration tests (bats) with strict verify
+    runs-on: ubuntu-22.04
+    env:
+      KIRO_REQUIRE_VERIFY: "true"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install test deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats jq openssl tar
+
+      - name: Run bats tests (strict)
+        run: |
+          ./scripts/test.sh
+
+  coverage:
+    name: Coverage (kcov over bats)
+    runs-on: ubuntu-22.04
+    env:
+      KIRO_REQUIRE_VERIFY: "true"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install coverage deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats kcov jq openssl
+
+      - name: Generate coverage with kcov
+        run: |
+          set -euo pipefail
+          mkdir -p coverage
+          # Include only our scripts, exclude tests
+          kcov --include-pattern=scripts --exclude-pattern=tests coverage bats tests/unit || true
+          # Summarize coverage if kcov produced it
+          if ls coverage/*/index.json >/dev/null 2>&1; then
+            echo "Coverage generated"
+          else
+            echo "kcov did not produce coverage (this may happen if no scripts were traced)"
+          fi
+
+      - name: Add coverage summary to job summary
+        run: |
+          set -euo pipefail
+          idx=$(find coverage -maxdepth 2 -type f -name index.json | head -n1 || true)
+          if [ -n "${idx:-}" ]; then
+            echo "## Coverage Summary" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+            jq -r '(.percent_covered|tostring) + "% coverage (" + (.covered_lines|tostring) + "/" + (.total_lines|tostring) + " lines)"' "$idx" >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No coverage index found to summarize" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+
+  container_smoke:
+    name: Container build (smoke on PR)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Docker info
+        run: |
+          docker --version || true
+          docker buildx version || true
+      - name: Build Containerfile
+        env:
+          DOCKER_BUILDKIT: "1"
+        run: |
+          docker build -t kiro-runtime-ci -f Containerfile --build-arg KIRO_SKIP_VERIFY=true .
