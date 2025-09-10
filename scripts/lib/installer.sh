@@ -213,6 +213,8 @@ kiro_download_icon() {
   local target_dir="$1"
   local need_sudo_flag="$2"
   local icon_dir="${target_dir}/resources/app/resources/linux"
+  # Ensure ROOT_DIR is set; default to repository root relative to this library file
+  : "${ROOT_DIR:="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"}"
   local local_icon="${ROOT_DIR}/assets/Kiro_1024x1024x32.png"
 
   if [[ "${need_sudo_flag}" == true ]]; then

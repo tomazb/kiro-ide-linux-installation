@@ -29,7 +29,7 @@ RUN bash -lc "./scripts/install-kiro.sh --force" \
   && ln -sf /opt/kiro/bin/kiro /usr/local/bin/kiro
 
 # Default to a non-root user for runtime safety
-RUN useradd -m -u 10001 kiro || true
+RUN id -u kiro &>/dev/null || useradd -m -u 10001 kiro
 USER kiro
 WORKDIR /home/kiro
 

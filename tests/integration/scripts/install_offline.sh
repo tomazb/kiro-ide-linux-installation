@@ -34,8 +34,7 @@ export KIRO_DESKTOP_DIR_USER="${workdir}/applications"
 export KIRO_SKIP_DEPS=true
 
 ./scripts/install-kiro.sh --user --require-verify \
-  --package "file:${workdir}/kiro.tar.gz" \
-  --checksum "file:${workdir}/kiro.tar.gz.sha256"
+  --package "file:${workdir}/kiro.tar.gz"
 
 # Assertions
 [ -x "${workdir}/install/bin/kiro" ]

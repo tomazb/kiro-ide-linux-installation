@@ -92,6 +92,11 @@ if [[ -n "${PLATFORM}" ]]; then
 fi
 ARGS+=( . )
 
+# If using docker buildx, ensure the image is loaded into the local daemon
+if [[ "${ENGINE}" == docker ]] && docker buildx version >/dev/null 2>&1; then
+  [[ " ${ARGS[*]} " =~ " --load " ]] || ARGS+=(--load)
+fi
+
 printf 'Engine: %s\n' "${ENGINE}"
 [[ -n "${PLATFORM}" ]] && printf 'Platform: %s\n' "${PLATFORM}" || true
 printf 'Building image: %s\n' "${IMAGE_NAME}:${IMAGE_TAG}"

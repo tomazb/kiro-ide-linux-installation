@@ -30,8 +30,11 @@ main() {
     exit 1
   fi
 
-  # Delegate to refactored installer
-  exec bash "${tmp_dir}/scripts/install-kiro.sh" "$@"
+  # Delegate to refactored installer (ensure cleanup happens)
+  bash "${tmp_dir}/scripts/install-kiro.sh" "$@"
+  local rc=$?
+  rm -rf "${tmp_dir}"
+  exit "${rc}"
 }
 
 main "$@"

@@ -99,8 +99,12 @@ main() {
     lock_path="${XDG_RUNTIME_DIR:-/tmp}/kiro-install.lock"
   else
     lock_path="/var/lock/kiro-install.lock"
+    [[ -w "$(dirname "${lock_path}")" ]] || lock_path="/tmp/kiro-install.lock"
   fi
-  kiro_fs_acquire_lock "${lock_path}"
+  if ! kiro_fs_acquire_lock "${lock_path}"; then
+    log_error "Failed to acquire lock at ${lock_path}"
+    return 1
+  fi
   trap 'kiro_fs_release_lock' EXIT ERR INT TERM
 
   case "${ACTION}" in

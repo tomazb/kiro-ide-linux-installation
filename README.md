@@ -187,7 +187,6 @@ To pin a custom CA bundle for HTTPS downloads, pass --ca-bundle /path/to/ca-bund
 
 For full details, see docs/SECURITY.md.
 
-See the full user guide in docs/USER_GUIDE.md.
 
 ## License
 

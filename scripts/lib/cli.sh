@@ -13,14 +13,21 @@ kiro_cli_parse() {
   local short_opts="hyvq"
   local long_opts="help,install,update,uninstall,user,force,clean,dry-run,non-interactive,yes,config:,cache-dir:,state-dir:,log-level:,no-color,json-logs,checksum:,sig:,cert:,package:,require-verify,ca-bundle:,skip-deps,skip-verify,skip-hooks,channel:,version:,prefix:"
 
-  if getopt --test >/dev/null 2>&1; then
-    local parsed
-    parsed=$(getopt -o "${short_opts}" -l "${long_opts}" -n kiro -- "${args[@]}" 2>/dev/null) || {
-      echo "Failed to parse arguments" >&2
-      return 2
-    }
-    # shellcheck disable=SC2086
-    eval set -- ${parsed}
+  if command -v getopt >/dev/null 2>&1; then
+    local rc=0
+    getopt --test >/dev/null 2>&1 || rc=$?
+    if [[ ${rc} -eq 4 ]]; then
+      local parsed
+      parsed=$(getopt -o "${short_opts}" -l "${long_opts}" -n kiro -- "${args[@]}" 2>/dev/null) || {
+        echo "Failed to parse arguments" >&2
+        return 2
+      }
+      # shellcheck disable=SC2086
+      eval set -- ${parsed}
+    else
+      # Fallback parse when getopt test is unsupported
+      set -- "${args[@]}"
+    fi
   else
     # Very simple fallback: iterate args
     set -- "${args[@]}"

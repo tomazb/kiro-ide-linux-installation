@@ -51,13 +51,14 @@ kiro_net_download() {
 
   if command -v curl >/dev/null 2>&1; then
     # Build curl args
-    local -a args=("-fsSL" "--retry" "${retries}" "--retry-all-errors" "--connect-timeout" "10")
+    local -a args
+    if [[ "${url}" =~ ^https:// ]]; then
+      args=("--proto" "=https" "-fsSL" "--retry" "${retries}" "--retry-all-errors" "--connect-timeout" "10")
+    else
+      args=("-fsSL" "--retry" "${retries}" "--retry-all-errors" "--connect-timeout" "10")
+    fi
     if [[ -n "${ca_path}" ]]; then
       args+=("--cacert" "${ca_path}")
-    fi
-    # For HTTPS, enforce protocol; otherwise let curl handle (e.g., http if allowed)
-    if [[ "${url}" =~ ^https:// ]]; then
-      args=("--proto" "=https" "${args[@]}")
     fi
     args+=("-o" "${out}" "${url}")
     curl "${args[@]}"

@@ -184,8 +184,8 @@ kiro_sha256() {
 
 kiro_parse_checksum_file() {
   # Extract the first 64-hex digest from a checksum file/string
-  local file="$1"
-  grep -oE '[A-Fa-f0-9]{64}' "${file}" | head -n1 | tr 'A-F' 'a-f'
+  local input="$1"
+  grep -oE '[A-Fa-f0-9]{64}' "${input}" | head -n1 | tr 'A-F' 'a-f'
 }
 
 kiro_resolve_checksum_arg() {
