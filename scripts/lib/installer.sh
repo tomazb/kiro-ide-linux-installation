@@ -199,25 +199,13 @@ kiro_prepare_paths() {
 kiro_set_permissions() {
   local pfx="$1"
   if [[ -x "${pfx}/kiro" ]]; then
-    if [[ "${NEED_SUDO}" == true ]]; then
-      sudo chmod +x "${pfx}/kiro" || true
-    else
-      chmod +x "${pfx}/kiro" || true
-    fi
+    kiro_maybe_sudo chmod +x "${pfx}/kiro" || true
   fi
   if [[ -x "${pfx}/bin/kiro" ]]; then
-    if [[ "${NEED_SUDO}" == true ]]; then
-      sudo chmod +x "${pfx}/bin/kiro" || true
-    else
-      chmod +x "${pfx}/bin/kiro" || true
-    fi
+    kiro_maybe_sudo chmod +x "${pfx}/bin/kiro" || true
   fi
   if [[ -e "${pfx}/chrome-sandbox" ]]; then
-    if [[ "${NEED_SUDO}" == true ]]; then
-      sudo chmod 4755 "${pfx}/chrome-sandbox" || log_warn "Failed to set SUID on chrome-sandbox"
-    else
-      chmod 4755 "${pfx}/chrome-sandbox" || log_warn "Failed to set SUID on chrome-sandbox"
-    fi
+    kiro_maybe_sudo chmod 4755 "${pfx}/chrome-sandbox" || log_warn "Failed to set SUID on chrome-sandbox"
   fi
 }
 
@@ -228,14 +216,14 @@ kiro_download_icon() {
   local local_icon="${ROOT_DIR}/assets/Kiro_1024x1024x32.png"
 
   if [[ "${need_sudo_flag}" == true ]]; then
-    sudo mkdir -p "${icon_dir}"
+    kiro_maybe_sudo mkdir -p "${icon_dir}"
   else
     mkdir -p "${icon_dir}"
   fi
 
   if [[ -f "${local_icon}" ]]; then
     if [[ "${need_sudo_flag}" == true ]]; then
-      sudo cp "${local_icon}" "${icon_dir}/kiro.png"
+      kiro_maybe_sudo cp "${local_icon}" "${icon_dir}/kiro.png"
     else
       cp "${local_icon}" "${icon_dir}/kiro.png"
     fi
@@ -299,8 +287,8 @@ EOF
   local desktop_file="${desktop_dir}/kiro.desktop"
   mkdir -p "${desktop_dir}"
   if [[ "${need_sudo_flag}" == true ]]; then
-    printf '%s' "${desktop_content}" | sudo tee "${desktop_file}" >/dev/null
-    sudo chmod +x "${desktop_file}"
+    printf '%s' "${desktop_content}" | kiro_maybe_sudo tee "${desktop_file}" >/dev/null
+    kiro_maybe_sudo chmod +x "${desktop_file}"
   else
     kiro_fs_atomic_write "${desktop_file}" <<<"${desktop_content}"
     chmod +x "${desktop_file}"
@@ -308,7 +296,7 @@ EOF
 
   if command -v update-desktop-database >/dev/null 2>&1; then
     if [[ "${need_sudo_flag}" == true ]]; then
-      sudo update-desktop-database "${desktop_dir}" || true
+      kiro_maybe_sudo update-desktop-database "${desktop_dir}" || true
     else
       update-desktop-database "${desktop_dir}" || true
     fi
@@ -338,8 +326,8 @@ kiro_install_main() {
 
   log_info "Copying files to ${INSTALL_PREFIX}"
   if [[ "${NEED_SUDO}" == true ]]; then
-    sudo mkdir -p "${INSTALL_PREFIX}"
-    sudo cp -r "${KIRO_PAYLOAD_DIR}"/* "${INSTALL_PREFIX}"
+    kiro_maybe_sudo mkdir -p "${INSTALL_PREFIX}"
+    kiro_maybe_sudo cp -r "${KIRO_PAYLOAD_DIR}"/* "${INSTALL_PREFIX}"
   else
     mkdir -p "${INSTALL_PREFIX}"
     cp -r "${KIRO_PAYLOAD_DIR}"/* "${INSTALL_PREFIX}"
@@ -350,7 +338,7 @@ kiro_install_main() {
   # Symlink
   mkdir -p "${SYMLINK_DIR}"
   if [[ "${NEED_SUDO}" == true ]]; then
-    sudo ln -sf "${INSTALL_PREFIX}/bin/kiro" "${SYMLINK_DIR}/kiro"
+    kiro_maybe_sudo ln -sf "${INSTALL_PREFIX}/bin/kiro" "${SYMLINK_DIR}/kiro"
   else
     ln -sf "${INSTALL_PREFIX}/bin/kiro" "${SYMLINK_DIR}/kiro"
   fi
@@ -382,7 +370,7 @@ kiro_uninstall_main() {
   else
     log_info "Removing ${INSTALL_PREFIX}"
     if [[ "${NEED_SUDO}" == true ]]; then
-      sudo rm -rf "${INSTALL_PREFIX}"
+      kiro_maybe_sudo rm -rf "${INSTALL_PREFIX}"
     else
       rm -rf "${INSTALL_PREFIX}"
     fi
@@ -391,15 +379,15 @@ kiro_uninstall_main() {
   # Symlink
   if [[ -L "${SYMLINK_DIR}/kiro" ]]; then
     log_info "Removing symlink ${SYMLINK_DIR}/kiro"
-    if [[ "${NEED_SUDO}" == true ]]; then sudo rm -f "${SYMLINK_DIR}/kiro"; else rm -f "${SYMLINK_DIR}/kiro"; fi
+    if [[ "${NEED_SUDO}" == true ]]; then kiro_maybe_sudo rm -f "${SYMLINK_DIR}/kiro"; else rm -f "${SYMLINK_DIR}/kiro"; fi
   fi
 
   # Desktop entry
   if [[ -f "${DESKTOP_DIR}/kiro.desktop" ]]; then
     log_info "Removing desktop entry ${DESKTOP_DIR}/kiro.desktop"
-    if [[ "${NEED_SUDO}" == true ]]; then sudo rm -f "${DESKTOP_DIR}/kiro.desktop"; else rm -f "${DESKTOP_DIR}/kiro.desktop"; fi
+    if [[ "${NEED_SUDO}" == true ]]; then kiro_maybe_sudo rm -f "${DESKTOP_DIR}/kiro.desktop"; else rm -f "${DESKTOP_DIR}/kiro.desktop"; fi
     if command -v update-desktop-database >/dev/null 2>&1; then
-      if [[ "${NEED_SUDO}" == true ]]; then sudo update-desktop-database "${DESKTOP_DIR}" || true; else update-desktop-database "${DESKTOP_DIR}" || true; fi
+      if [[ "${NEED_SUDO}" == true ]]; then kiro_maybe_sudo update-desktop-database "${DESKTOP_DIR}" || true; else update-desktop-database "${DESKTOP_DIR}" || true; fi
     fi
   fi
 
